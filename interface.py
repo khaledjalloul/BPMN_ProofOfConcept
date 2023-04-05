@@ -6,10 +6,10 @@ def displayInterface(payload):
     root.config(padx=20, pady=10)
 
     payload.pop(None)
-    payload.pop('vars')
+    payload.pop('token_state')
     payload.pop('errors')
     for index, task in enumerate(payload):
-        if task != 'vars' and task is not None:
+        if task != 'token_state' and task is not None:
             frame = tk.Frame(root)
             frame.grid(row=int(index/4),column=index%4, sticky='n')
             frame.config(padx=20)

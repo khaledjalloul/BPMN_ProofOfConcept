@@ -4,77 +4,77 @@ from pprint import pprint
 from copy import copy
 from interface import displayInterface
 
-def handleDeviation(kargs, variable, value, expected_value):
-    kargs['payload']['vars'][variable] = expected_value
+def handleDeviation(kargs, variable, value, expected_value, stage='enter'):
+    kargs['payload']['token_state'][variable] = expected_value
     kargs['task'].update({'error': {variable: value}}) # Save wrong value in error
-    kargs['task'].update({'enter_state': copy(kargs['payload']['vars'])}) # Save correct value in payload
+    kargs['task'].update({f'{stage}_state': copy(kargs['payload']['token_state'])}) # Save correct value in payload
     
 class Handler():        
     def on_enter_task(self, **kargs):
-        if 'vars' in kargs['payload']:
-            kargs['task'].update({'enter_state': copy(kargs['payload']['vars'])})
+        if 'token_state' in kargs['payload']:
+            kargs['task'].update({'enter_state': copy(kargs['payload']['token_state'])})
         else:
             kargs['task'].update({'enter_state': {}})
         
     def on_exit_task(self, **kargs):
-        kargs['task'].update({'exit_state': copy(kargs['payload']['vars'])})
+        kargs['task'].update({'exit_state': copy(kargs['payload']['token_state'])})
         
     def on_CheckDate(self, **kargs):
-        kargs['payload']['vars'] = {}
+        kargs['payload']['token_state'] = {}
         kargs['payload']['errors'] = []
-        kargs['payload']['vars']['date'] = 20230701
-        kargs['payload']['vars']['temperature'] = 26
-        kargs['payload']['vars']['weather'] = 'Sunny' 
-        kargs['payload']['vars']['cost'] = 100  
+        kargs['payload']['token_state']['date'] = 20230701
+        kargs['payload']['token_state']['temperature'] = 26
+        kargs['payload']['token_state']['weather'] = 'Sunny' 
+        kargs['payload']['token_state']['cost'] = 100  
         
     def on_exit_CheckDate(self, **kargs):
-        date = kargs['payload']['vars']['date']
-        if kargs['payload']['vars']['date'] < 20230715:
+        date = kargs['payload']['token_state']['date']
+        if kargs['payload']['token_state']['date'] < 20230715:
             handleDeviation(kargs=kargs, variable='date', value=date, expected_value=20230715)
 
     def on_HoneyCollection(self, **kargs):
-        kargs['payload']['vars']['cost'] += 50  
+        kargs['payload']['token_state']['cost'] += 50  
     
     def on_RoutineCheckUntilAugust(self, **kargs):
-        kargs['payload']['vars']['colony_strength'] = 80
-        kargs['payload']['vars']['quality'] = 90
-        kargs['payload']['vars']['cost'] += 50  
-        kargs['payload']['vars']['date'] = 20230801
+        kargs['payload']['token_state']['colony_strength'] = 80
+        kargs['payload']['token_state']['quality'] = 90
+        kargs['payload']['token_state']['cost'] += 50  
+        kargs['payload']['token_state']['date'] = 20230801
         
     def on_CheckWeightUntilAugust(self, **kargs):
-        if not 'weight' in kargs['payload']['vars']:
-            kargs['payload']['vars']['weight'] = 20
+        if not 'weight' in kargs['payload']['token_state']:
+            kargs['payload']['token_state']['weight'] = 20
         
     def on_CheckProvisions(self, **kargs):
-        kargs['payload']['vars']['num_provisions'] = 20
-        kargs['payload']['vars']['cost'] += 20
+        kargs['payload']['token_state']['num_provisions'] = 20
+        kargs['payload']['token_state']['cost'] += 20
         
     def on_LiquidProteinsFeeding(self, **kargs):
-        while kargs['payload']['vars']['weight'] < 30:
-            kargs['payload']['vars']['weight'] += 1
-            kargs['payload']['vars']['cost'] += 2
-            kargs['payload']['vars']['date'] +=1
+        while kargs['payload']['token_state']['weight'] < 25:
+            kargs['payload']['token_state']['weight'] += 1
+            kargs['payload']['token_state']['cost'] += 2
+            kargs['payload']['token_state']['date'] +=1
         
     def on_enter_VarioseVaccineNovember(self, **kargs):
-        weight = kargs['payload']['vars']['weight']
+        weight = kargs['payload']['token_state']['weight']
         if (weight < 35):
             handleDeviation(kargs=kargs, variable='weight', value=weight, expected_value=35)
         
     def on_VarioseVaccineNovember(self, **kargs):
 
-        kargs['payload']['vars']['weight'] -= 5
-        kargs['payload']['vars']['cost'] += 100
-        kargs['payload']['vars']['date'] += 100
-        kargs['payload']['vars']['quality'] += 10
+        kargs['payload']['token_state']['weight'] -= 5
+        kargs['payload']['token_state']['cost'] += 100
+        kargs['payload']['token_state']['date'] += 100
+        kargs['payload']['token_state']['quality'] += 10
         
 def test_process():
     instance = BpmnProcess()
     try:
         instance.start_process(open("bee.xml","r").read(),Handler())
-        state, errors = instance.payload['vars'], instance.payload['errors']
+        state, errors = instance.payload['token_state'], instance.payload['errors']
         if len(errors) == 0:
             print("\nProcess Executed. Final State:\n")
-            pprint(instance.payload['vars'])
+            pprint(instance.payload['token_state'])
         else:
             print("\nProcess encountered errors:\n")
             pprint(errors)

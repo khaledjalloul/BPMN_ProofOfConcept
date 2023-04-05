@@ -52,17 +52,17 @@
     <bpmn:sequenceFlow id="Flow_0pjwy20" name="&#62; July 15" sourceRef="Activity_1sm5q2p" targetRef="Activity_1t8qomo" />
     <bpmn:sequenceFlow id="Flow_0wi5uhq" sourceRef="Activity_0tm33n9" targetRef="Gateway_1emkcex" />
     <bpmn:sequenceFlow id="Flow_1kt9pq1" name="&#62; 35 (Sufficient Provision)" sourceRef="Gateway_1emkcex" targetRef="Activity_1myzbog">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("vars").get("num_provisions") &lt;= 35</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &lt;= 35</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1bpt0d7" sourceRef="Gateway_1emkcex" targetRef="Gateway_0d41f63">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("vars").get("num_provisions") &gt; 35</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &gt; 35</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0f4hnrs" sourceRef="Activity_1myzbog" targetRef="Gateway_05w8y47" />
     <bpmn:sequenceFlow id="Flow_1db0lkr" name="date &#60;= August 28th" sourceRef="Gateway_05w8y47" targetRef="Activity_0ld68o8">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("vars").get("date") &lt;= 20230828</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("date") &lt;= 20230828</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0aopavc" name="date &#62; August 28th" sourceRef="Gateway_05w8y47" targetRef="Activity_175qj7h">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("vars").get("date") &gt; 20230828</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("date") &gt; 20230828</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1g1mzzk" sourceRef="Activity_0ld68o8" targetRef="Gateway_1b615i7" />
     <bpmn:sequenceFlow id="Flow_0nzklu5" sourceRef="Activity_175qj7h" targetRef="Gateway_1b615i7" />
