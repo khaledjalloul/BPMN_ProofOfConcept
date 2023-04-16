@@ -24,17 +24,21 @@ def displayInterface(payload):
             after.grid(row=2, column=2)
             for enter_index, enter_var in enumerate(payload[task]['enter_state']):
                 labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
-                if 'error' in payload[task] and enter_var in payload[task]['error']:
-                    labelText += f" ({payload[task]['error'][enter_var]})"
+                if 'error_enter' in payload[task] and enter_var in payload[task]['error_enter']:
+                    labelText += f" ({payload[task]['error_enter'][enter_var]})"
                 label = tk.Label(frame, text=labelText,
-                    fg='red' if 'error' in payload[task] and enter_var in payload[task]['error'] else 'black')
+                    fg='red' if 'error_enter' in payload[task] and enter_var in payload[task]['error_enter'] else 'black')
                 label.grid(row=3+enter_index, column=1, sticky='w')
                 label.config(padx=10)
                 
             for exit_index, exit_var in enumerate(payload[task]['exit_state']):
-                label = tk.Label(frame, text=f"{exit_var} = {payload[task]['exit_state'][exit_var]}",
-                    fg='green' if (not exit_var in payload[task]['enter_state']) or 
-                        payload[task]['exit_state'][exit_var] != payload[task]['enter_state'][exit_var] else 'black')
+                labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
+                if 'error_exit' in payload[task] and exit_var in payload[task]['error_exit']:
+                    labelText += f" ({payload[task]['error_exit'][exit_var]})"
+                label = tk.Label(frame, text=labelText,
+                    fg='red' if 'error_exit' in payload[task] and exit_var in payload[task]['error_exit'] else
+                        ('green' if (not exit_var in payload[task]['enter_state']) or 
+                        payload[task]['exit_state'][exit_var] != payload[task]['enter_state'][exit_var] else 'black'))
                 label.grid(row=3+exit_index, column=2, sticky='w')
 
     root.mainloop()
