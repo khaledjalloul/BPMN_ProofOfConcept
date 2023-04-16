@@ -1,0 +1,10 @@
+{
+    "Process1": {
+        "enter": {
+            "weight": [10, 30]
+        },
+        "exit": {
+            "cost": 140
+        }
+    }
+}
