@@ -26,7 +26,8 @@
     "RoutineCheck": {
         "index": 5,
         "enter": {
-            "cost": [120, 150]
+            "cost": [130, 150],
+            "num_provisions": [30, 50]
         }
     }
 }

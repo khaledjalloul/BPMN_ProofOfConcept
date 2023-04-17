@@ -3,11 +3,12 @@ from pybpmn.bpmn_process import BpmnProcess
 from pprint import pprint
 from copy import copy
 from interface import displayInterface
+import time
 
 with open('data/constraints.json') as f:
     constraints = json.load(f)
     
-with open('data/alternatives.json') as f:
+with open('data/generated_alternatives.json') as f:
     alternatives = json.load(f)
     
 def handleDeviation(kargs, variable, value, expected_range, correct_value, stage):
@@ -27,14 +28,21 @@ def checkConstraints(name, position, kargs):
 def searchForAlternatives(kargs, index):
     token_state = kargs['payload']['token_state']
     
+    start_time = time.time()
     filteredProcesses1 = []
     for alternative in alternatives:
         enter_constraints = alternatives[alternative]["enter"]
+        isValidEnter = True
         for constraint in enter_constraints:
-            if constraint in token_state:
-                if token_state[constraint] >= enter_constraints[constraint][0] and token_state[constraint] <= enter_constraints[constraint][1]:
-                    filteredProcesses1.append(alternative)
-    print("Possible Solutions (1): ", filteredProcesses1)
+            if constraint not in token_state or token_state[constraint] > enter_constraints[constraint][1] or token_state[constraint] < enter_constraints[constraint][0]:
+                isValidEnter = False
+                break
+        if isValidEnter:
+            filteredProcesses1.append(alternative)
+    filter1_end_time = time.time()
+    filter1_elapsed_time = filter1_end_time - start_time
+    print(f"Possible Solutions (1): (Elapsed time: {filter1_elapsed_time} seconds)")
+    pprint(filteredProcesses1)
     
     filteredProcesses2 = []
     for alternative in filteredProcesses1:
@@ -45,7 +53,7 @@ def searchForAlternatives(kargs, index):
             isValidExit = True
             enter_constraints = remaining_processes[process]["enter"]
             for value in exit_values:
-                if not value in enter_constraints or exit_values[value] > enter_constraints[value][1] or exit_values[value] < enter_constraints[value][0]:
+                if value not in enter_constraints or exit_values[value] > enter_constraints[value][1] or exit_values[value] < enter_constraints[value][0]:
                     isValidExit = False
                     break         
             if (isValidExit):
@@ -53,7 +61,10 @@ def searchForAlternatives(kargs, index):
                     "solution": alternative,
                     "nextProcess": process
                 })
-    print("Possible Solutions (2): ", filteredProcesses2)
+    filter2_end_time = time.time()
+    filter2_elapsed_time = filter2_end_time - filter1_end_time
+    print(f"Possible Solutions (2): (Elapsed time: {filter2_elapsed_time} seconds)")
+    pprint(filteredProcesses2)
 
                     
 class Handler():        
