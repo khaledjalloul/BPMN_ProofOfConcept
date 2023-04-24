@@ -1,9 +1,7 @@
 import json
 from pybpmn.bpmn_process import BpmnProcess
-from pprint import pprint
 from copy import copy
 from interface import displayInterface
-from alternatives_interface import displayAlternativesInterface
 import time
 
 with open('data/constraints.json') as f:
@@ -120,16 +118,6 @@ class Handler():
 def test_process():
     instance = BpmnProcess()
     instance.start_process(open("models/simple_bee.xml","r").read(),Handler())
-    state, deviations = instance.payload['token_state'], instance.payload['deviations']
-    if len(deviations) == 0:
-        print("\nProcess Executed. Final State:\n")
-        pprint(state)
-    else:
-        pass
-        # print("\nProcess encountered deviations:\n")
-        # pprint(deviations)
-    # pprint(instance.payload)
-    # displayInterface(instance.payload)
-    displayAlternativesInterface(instance.payload, len(alternatives))
+    displayInterface(instance.payload)
 if __name__ == '__main__':
     test_process()
