@@ -23,9 +23,9 @@ def checkConstraints(name, position, kargs):
         for constraint in task_constraints:
             if token_state[constraint] < task_constraints[constraint][0] or token_state[constraint] > task_constraints[constraint][1]:
                 if position == "exit":
-                    searchForAlternatives(name, kargs, constraints[name]["index"])
+                    searchForAlternatives(name, kargs, constraints[name]["index"], constraint)
     
-def searchForAlternatives(name, kargs, index):
+def searchForAlternatives(name, kargs, index, constraint_name):
     token_state = kargs['payload']['token_state']
 
     start_time = time.time()
@@ -58,7 +58,8 @@ def searchForAlternatives(name, kargs, index):
                 filteredProcesses2.append({
                     "solution": alternative,
                     "nextProcess": process,
-                    "nextProcessIndex": remaining_processes[process]['index']
+                    "nextProcessIndex": remaining_processes[process]['index'],
+                    "constraint": constraint_name
                 })
     filter2_end_time = time.time()
     filter2_elapsed_time = filter2_end_time - filter1_end_time
@@ -73,7 +74,8 @@ def searchForAlternatives(name, kargs, index):
                 "time": filter2_elapsed_time
             }
         },
-        "alternatives": copy(filteredProcesses2)
+        "alternatives": copy(filteredProcesses2),
+        "constraint": constraint_name
     }})
 
                     

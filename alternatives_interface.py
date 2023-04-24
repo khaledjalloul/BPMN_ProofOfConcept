@@ -36,16 +36,18 @@ def displayAlternativesInterface(payload, len_alternatives):
             after.grid(row=2, column=2)
             
             if type == 'task':
-                for enter_index, enter_var in enumerate(payload[task]['enter_state']):
-                    labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
-                    label = tk.Label(info_frame, text=labelText, bg="white")
-                    label.grid(row=3+enter_index, column=1, sticky='w')
-                    label.config(padx=10)
-                    
-                for exit_index, exit_var in enumerate(payload[task]['exit_state']):
-                    labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
-                    label = tk.Label(info_frame, text=labelText, bg="white")
-                    label.grid(row=3+exit_index, column=2, sticky='w')
+                if task in payload:
+                    for enter_index, enter_var in enumerate(payload[task]['enter_state']):
+                        labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white")
+                        label.grid(row=3+enter_index, column=1, sticky='w')
+                        label.config(padx=10)
+                        
+                    for exit_index, exit_var in enumerate(payload[task]['exit_state']):
+                        labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white",
+                            fg = 'red' if task in deviations and exit_var == deviations[task]['constraint'] else 'black')
+                        label.grid(row=3+exit_index, column=2, sticky='w')
             elif type == 'task_constraints':
                 if 'enter' in constraints[task]:
                     for enter_index, enter_var in enumerate(constraints[task]['enter']):
@@ -62,7 +64,6 @@ def displayAlternativesInterface(payload, len_alternatives):
             else:
                 if 'enter' in all_alternatives[task]:
                     for enter_index, enter_var in enumerate(all_alternatives[task]['enter']):
-                        print(enter_var, all_alternatives[task]['enter'])
                         labelText = f"{enter_var} = {all_alternatives[task]['enter'][enter_var]}"
                         label = tk.Label(info_frame, text=labelText, bg="white")
                         label.grid(row=3+enter_index, column=1, sticky='w')
