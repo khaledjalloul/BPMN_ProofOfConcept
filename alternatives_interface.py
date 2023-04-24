@@ -4,6 +4,9 @@ import json
 with open('data/constraints.json') as f:
     constraints = json.load(f)
 
+with open('data/generated_alternatives.json') as f:
+    all_alternatives = json.load(f)
+    
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 900
 
@@ -17,12 +20,14 @@ def getMaxIndex(constraints):
 def displayAlternativesInterface(payload, len_alternatives):
     deviations = payload['deviations']
     
-    def show_info_wrapper(task, passed_widget):
+    def show_info_wrapper(task, passed_widget, type):
         def show_info(event):     
             for widget in info_frame.winfo_children():
                 widget.destroy()
-                
-            info_frame_task_label = tk.Label(info_frame, text=task, bg="white")
+            
+            title = task if type == 'task' else task + " Constraints"
+            
+            info_frame_task_label = tk.Label(info_frame, text=title, bg="white")
             info_frame_task_label.grid(row=1, column=1, columnspan=2)
             
             before = tk.Label(info_frame, text="Before", bg="white")
@@ -30,18 +35,47 @@ def displayAlternativesInterface(payload, len_alternatives):
             after = tk.Label(info_frame, text="After", bg="white")
             after.grid(row=2, column=2)
             
-            for enter_index, enter_var in enumerate(payload[task]['enter_state']):
-                labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
-                label = tk.Label(info_frame, text=labelText, bg="white")
-                label.grid(row=3+enter_index, column=1, sticky='w')
-                label.config(padx=10)
-                
-            for exit_index, exit_var in enumerate(payload[task]['exit_state']):
-                labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
-                label = tk.Label(info_frame, text=labelText, bg="white")
-                label.grid(row=3+exit_index, column=2, sticky='w')
+            if type == 'task':
+                for enter_index, enter_var in enumerate(payload[task]['enter_state']):
+                    labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
+                    label = tk.Label(info_frame, text=labelText, bg="white")
+                    label.grid(row=3+enter_index, column=1, sticky='w')
+                    label.config(padx=10)
+                    
+                for exit_index, exit_var in enumerate(payload[task]['exit_state']):
+                    labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
+                    label = tk.Label(info_frame, text=labelText, bg="white")
+                    label.grid(row=3+exit_index, column=2, sticky='w')
+            elif type == 'task_constraints':
+                if 'enter' in constraints[task]:
+                    for enter_index, enter_var in enumerate(constraints[task]['enter']):
+                        labelText = f"{enter_var} = {constraints[task]['enter'][enter_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white")
+                        label.grid(row=3+enter_index, column=1, sticky='w')
+                        label.config(padx=10)
+                        
+                if 'exit' in constraints[task]:
+                    for exit_index, exit_var in enumerate(constraints[task]['exit']):
+                        labelText = f"{exit_var} = {constraints[task]['exit'][exit_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white")
+                        label.grid(row=3+exit_index, column=2, sticky='w')
+            else:
+                if 'enter' in all_alternatives[task]:
+                    for enter_index, enter_var in enumerate(all_alternatives[task]['enter']):
+                        print(enter_var, all_alternatives[task]['enter'])
+                        labelText = f"{enter_var} = {all_alternatives[task]['enter'][enter_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white")
+                        label.grid(row=3+enter_index, column=1, sticky='w')
+                        label.config(padx=10)
+                        
+                if 'exit' in all_alternatives[task]:
+                    for exit_index, exit_var in enumerate(all_alternatives[task]['exit']):
+                        labelText = f"{exit_var} = {all_alternatives[task]['exit'][exit_var]}"
+                        label = tk.Label(info_frame, text=labelText, bg="white")
+                        label.grid(row=3+exit_index, column=2, sticky='w')
                 
             info_frame.place(x=passed_widget.winfo_rootx() - root.winfo_rootx() - 50, y=passed_widget.winfo_rooty() - root.winfo_rooty() + 30)
+
         return show_info
         
     def hide_info(event):
@@ -80,7 +114,7 @@ def displayAlternativesInterface(payload, len_alternatives):
             task_label.grid(column=0, row=index)
             task_label.config(pady=10)
             
-            task_label.bind("<Enter>", show_info_wrapper(task_title, task_label))
+            task_label.bind("<Enter>", show_info_wrapper(task_title, task_label, 'task'))
             task_label.bind("<Leave>", hide_info)
 
     if len(deviations.items()) != 0:
@@ -126,9 +160,15 @@ def displayAlternativesInterface(payload, len_alternatives):
                             task_label.grid(column=0, row=task_index)
                             task_label.config(pady=10)
                             
+                            task_label.bind("<Enter>", show_info_wrapper(task_title, task_label, 'task_constraints'))
+                            task_label.bind("<Leave>", hide_info)
+                            
                 alt_task_label = tk.Label(alternative_frame, text=alternative['solution'], fg='green')
                 alt_task_label.grid(column=(dev_task_index - 1) * 2 + 1, row=0)
                 alt_task_label.config(pady=10)
+                
+                alt_task_label.bind("<Enter>", show_info_wrapper(alternative['solution'], alt_task_label, 'alt_task_constraints'))
+                alt_task_label.bind("<Leave>", hide_info)
                 
                 for task_index in range(getMaxIndex(constraints)):
                     if task_index + 1 >= alternative['nextProcessIndex']:
@@ -140,6 +180,13 @@ def displayAlternativesInterface(payload, len_alternatives):
                             task_label = tk.Label(task_frame, text=task_title)
                             task_label.grid(column=0, row=task_index)
                             task_label.config(pady=10)
+                            
+                            task_label.bind("<Enter>", show_info_wrapper(task_title, task_label, 'task_constraints'))
+                            task_label.bind("<Leave>", hide_info)
+    
+    empty_frame = tk.Frame(main_frame, height=100)
+    empty_frame.grid(row= len(deviations.items()) + 2, columnspan=getMaxIndex(constraints))
+    empty_frame.config(pady = 10)
     
     canvas.create_window((0, 0), window=main_frame, anchor="nw")
     main_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
