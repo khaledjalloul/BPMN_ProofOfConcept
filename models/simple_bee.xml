@@ -64,10 +64,10 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_0wi5uhq" sourceRef="Activity_0tm33n9" targetRef="Gateway_1emkcex" />
     <bpmn:sequenceFlow id="Flow_1kt9pq1" name="&#62; 35 (Sufficient Provision)" sourceRef="Gateway_1emkcex" targetRef="Activity_0ld68o8">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &gt; 35</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &lt;= 35</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_1hhz15g" sourceRef="Gateway_1emkcex" targetRef="Activity_175qj7h">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &lt;= 35</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">payload.get("token_state").get("num_provisions") &gt; 35</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_13htack" sourceRef="StartEvent_1" targetRef="Activity_1sm5q2p" />
     <bpmn:sequenceFlow id="Flow_0pjwy20" name="&#62; July 15" sourceRef="Activity_1sm5q2p" targetRef="Activity_0tm33n9" />

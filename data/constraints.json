@@ -6,10 +6,16 @@
         "index": 2,
         "enter": {
             "date": [20230715, 20230730]
+        },
+        "exit": {
+            "num_provisions": [30, 50]
         }
     },
     "LiquidProteinsFeeding": {
         "index": 3,
+        "enter": {
+            "num_provisions": [30, 50]
+        },
         "exit": {
             "weight": [35, 50]
         }
@@ -27,7 +33,7 @@
         "index": 5,
         "enter": {
             "cost": [130, 150],
-            "num_provisions": [30, 50]
+            "quality": [60, 80]
         }
     }
 }

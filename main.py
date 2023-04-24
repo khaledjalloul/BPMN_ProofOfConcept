@@ -3,6 +3,7 @@ from pybpmn.bpmn_process import BpmnProcess
 from pprint import pprint
 from copy import copy
 from interface import displayInterface
+from alternatives_interface import displayAlternativesInterface
 import time
 
 with open('data/constraints.json') as f:
@@ -22,7 +23,6 @@ def checkConstraints(name, position, kargs):
         for constraint in task_constraints:
             if token_state[constraint] < task_constraints[constraint][0] or token_state[constraint] > task_constraints[constraint][1]:
                 if position == "exit":
-                    print(f"Encountered error at process \"{name}\". Evaluating {len(alternatives)} alternatives:\n")
                     searchForAlternatives(name, kargs, constraints[name]["index"])
     
 def searchForAlternatives(name, kargs, index):
@@ -62,9 +62,6 @@ def searchForAlternatives(name, kargs, index):
                 })
     filter2_end_time = time.time()
     filter2_elapsed_time = filter2_end_time - filter1_end_time
-    print(f"First Possible Solutions ({len(filteredProcesses1)}): (Elapsed time: {filter1_elapsed_time} seconds)")
-    print(f"Second Possible Solutions ({len(filteredProcesses2)}): (Elapsed time: {filter2_elapsed_time} seconds)")
-    pprint(filteredProcesses2)
     kargs['payload']['deviations'].update({name: {
         "stats": {
             "firstSet": {
@@ -100,9 +97,10 @@ class Handler():
  
     def on_CheckProvisions(self, **kargs):
         checkConstraints("CheckProvisions", "enter", kargs)
-        kargs['payload']['token_state']['num_provisions'] = 40
+        kargs['payload']['token_state']['num_provisions'] = 20
         kargs['payload']['token_state']['weight'] = 10
         kargs['payload']['token_state']['cost'] += 40
+        checkConstraints("CheckProvisions", "exit", kargs)
 
     def on_LiquidProteinsFeeding(self, **kargs):
         while kargs['payload']['token_state']['weight'] < 25:
@@ -128,6 +126,6 @@ def test_process():
         print("\nProcess encountered deviations:\n")
         pprint(deviations)
     # displayInterface(instance.payload)
-
+    displayAlternativesInterface(deviations, len(alternatives))
 if __name__ == '__main__':
     test_process()
