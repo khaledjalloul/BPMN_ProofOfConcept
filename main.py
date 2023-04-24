@@ -13,7 +13,6 @@ with open('data/generated_alternatives.json') as f:
     
 def handleDeviation(kargs, variable, value, expected_range, correct_value, stage):
     kargs['payload']['token_state'][variable] = correct_value
-    kargs['task'].update({f"error_{stage}": {variable: value}}) # Save wrong value in error
     kargs['task'].update({f'{stage}_state': copy(kargs['payload']['token_state'])}) # Save correct value in payload
     
 def checkConstraints(name, position, kargs):
@@ -21,11 +20,12 @@ def checkConstraints(name, position, kargs):
     if position in constraints[name]:
         task_constraints = constraints[name][position]
         for constraint in task_constraints:
-            if not (token_state[constraint] >= task_constraints[constraint][0] and token_state[constraint] <= task_constraints[constraint][1]):
+            if token_state[constraint] < task_constraints[constraint][0] or token_state[constraint] > task_constraints[constraint][1]:
                 if position == "exit":
-                    searchForAlternatives(kargs, constraints[name]["index"])
+                    print(f"Encountered error at process \"{name}\". Evaluating {len(alternatives)} alternatives:\n")
+                    searchForAlternatives(name, kargs, constraints[name]["index"])
     
-def searchForAlternatives(kargs, index):
+def searchForAlternatives(name, kargs, index):
     token_state = kargs['payload']['token_state']
     
     start_time = time.time()
@@ -41,8 +41,6 @@ def searchForAlternatives(kargs, index):
             filteredProcesses1.append(alternative)
     filter1_end_time = time.time()
     filter1_elapsed_time = filter1_end_time - start_time
-    print(f"Possible Solutions (1): (Elapsed time: {filter1_elapsed_time} seconds)")
-    pprint(filteredProcesses1)
     
     filteredProcesses2 = []
     for alternative in filteredProcesses1:
@@ -53,18 +51,33 @@ def searchForAlternatives(kargs, index):
             isValidExit = True
             enter_constraints = remaining_processes[process]["enter"]
             for value in exit_values:
-                if value not in enter_constraints or exit_values[value] > enter_constraints[value][1] or exit_values[value] < enter_constraints[value][0]:
+                if value not in enter_constraints or exit_values[value][0] < enter_constraints[value][0] or exit_values[value][1] > enter_constraints[value][1]:
                     isValidExit = False
                     break         
             if (isValidExit):
                 filteredProcesses2.append({
                     "solution": alternative,
-                    "nextProcess": process
+                    "nextProcess": process,
+                    "nextProcessIndex": remaining_processes[process]['index']
                 })
     filter2_end_time = time.time()
     filter2_elapsed_time = filter2_end_time - filter1_end_time
-    print(f"Possible Solutions (2): (Elapsed time: {filter2_elapsed_time} seconds)")
+    print(f"First Possible Solutions ({len(filteredProcesses1)}): (Elapsed time: {filter1_elapsed_time} seconds)")
+    print(f"Second Possible Solutions ({len(filteredProcesses2)}): (Elapsed time: {filter2_elapsed_time} seconds)")
     pprint(filteredProcesses2)
+    kargs['payload']['deviations'].update({name: {
+        "stats": {
+            "firstSet": {
+                "count": len(filteredProcesses1),
+                "time": filter1_elapsed_time
+            },
+            "secondSet": {
+                "count": len(filteredProcesses2),
+                "time": filter2_elapsed_time
+            }
+        },
+        "alternatives": copy(filteredProcesses2)
+    }})
 
                     
 class Handler():        
@@ -79,9 +92,9 @@ class Handler():
         
     def on_CheckDate(self, **kargs):
         kargs['payload']['token_state'] = {}
-        kargs['payload']['errors'] = []
+        kargs['payload']['deviations'] = {}
         kargs['payload']['token_state']['date'] = 20230701
-        kargs['payload']['token_state']['temperature'] = 26
+        kargs['payload']['token_state']['temperature'] = 18
         kargs['payload']['token_state']['weather'] = 'Sunny' 
         kargs['payload']['token_state']['cost'] = 100 
  
@@ -107,14 +120,13 @@ class Handler():
 def test_process():
     instance = BpmnProcess()
     instance.start_process(open("models/simple_bee.xml","r").read(),Handler())
-    state, errors = instance.payload['token_state'], instance.payload['errors']
-    if len(errors) == 0:
+    state, deviations = instance.payload['token_state'], instance.payload['deviations']
+    if len(deviations) == 0:
         print("\nProcess Executed. Final State:\n")
-        pprint(instance.payload['token_state'])
+        pprint(state)
     else:
-        print("\nProcess encountered errors:\n")
-        pprint(errors)
-        pprint(instance.payload)
+        print("\nProcess encountered deviations:\n")
+        pprint(deviations)
     # displayInterface(instance.payload)
 
 if __name__ == '__main__':

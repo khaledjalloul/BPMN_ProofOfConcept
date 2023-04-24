@@ -4,8 +4,12 @@ import json
 
 constraints = {
     "weight": [0, 40],
-    "cost": [80, 200],
+    "cost": [131, 149],
     "num_provisions": [30, 50],
+    "quality": [60, 80],
+    "temperature": [20, 30],
+    "humidity": [0, 10],
+    "strength": [20, 30]
 }
 
 constraint_names = []
@@ -31,7 +35,7 @@ for i in range(1000):
         selected_constraint = choice(constraint_names)
         while selected_constraint in output_constraints:
             selected_constraint = choice(constraint_names)
-        output_constraints[selected_constraint] = int((constraints[selected_constraint][0] + constraints[selected_constraint][1]) / 2)
+        output_constraints[selected_constraint] = constraints[selected_constraint]
         
     result = {}
     result["enter"] = input_constraints
@@ -45,7 +49,8 @@ for i in range(1000):
     if not alreadyExists:
         alternatives[name] = result
 
-pprint(alternatives)
+print(f"Generated {len(alternatives)} alternatives.")
+# pprint(alternatives)
 
 with open("data/generated_alternatives.json", "w") as file:
     json.dump(alternatives, file)        
