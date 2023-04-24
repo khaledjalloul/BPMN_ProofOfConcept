@@ -27,7 +27,7 @@ def checkConstraints(name, position, kargs):
     
 def searchForAlternatives(name, kargs, index):
     token_state = kargs['payload']['token_state']
-    
+
     start_time = time.time()
     filteredProcesses1 = []
     for alternative in alternatives:
@@ -123,9 +123,11 @@ def test_process():
         print("\nProcess Executed. Final State:\n")
         pprint(state)
     else:
-        print("\nProcess encountered deviations:\n")
-        pprint(deviations)
+        pass
+        # print("\nProcess encountered deviations:\n")
+        # pprint(deviations)
+    # pprint(instance.payload)
     # displayInterface(instance.payload)
-    displayAlternativesInterface(deviations, len(alternatives))
+    displayAlternativesInterface(instance.payload, len(alternatives))
 if __name__ == '__main__':
     test_process()

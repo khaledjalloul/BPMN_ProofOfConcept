@@ -1,7 +1,11 @@
 import tkinter as tk
 import json
+
 with open('data/constraints.json') as f:
     constraints = json.load(f)
+
+WINDOW_HEIGHT = 600
+WINDOW_WIDTH = 900
 
 def getMaxIndex(constraints):
     max = 0
@@ -9,11 +13,43 @@ def getMaxIndex(constraints):
         if constraints[task]["index"] > max:
             max = constraints[task]["index"]
     return max
+        
+def displayAlternativesInterface(payload, len_alternatives):
+    deviations = payload['deviations']
+    
+    def show_info_wrapper(task, passed_widget):
+        def show_info(event):     
+            for widget in info_frame.winfo_children():
+                widget.destroy()
+                
+            info_frame_task_label = tk.Label(info_frame, text=task, bg="white")
+            info_frame_task_label.grid(row=1, column=1, columnspan=2)
+            
+            before = tk.Label(info_frame, text="Before", bg="white")
+            before.grid(row=2, column=1)
+            after = tk.Label(info_frame, text="After", bg="white")
+            after.grid(row=2, column=2)
+            
+            for enter_index, enter_var in enumerate(payload[task]['enter_state']):
+                labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
+                label = tk.Label(info_frame, text=labelText, bg="white")
+                label.grid(row=3+enter_index, column=1, sticky='w')
+                label.config(padx=10)
+                
+            for exit_index, exit_var in enumerate(payload[task]['exit_state']):
+                labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
+                label = tk.Label(info_frame, text=labelText, bg="white")
+                label.grid(row=3+exit_index, column=2, sticky='w')
+                
+            info_frame.place(x=passed_widget.winfo_rootx() - root.winfo_rootx() - 50, y=passed_widget.winfo_rooty() - root.winfo_rooty() + 30)
+        return show_info
+        
+    def hide_info(event):
+        info_frame.place_forget()
 
-def displayAlternativesInterface(deviations, len_alternatives):
     root = tk.Tk()
     root.config(padx=20, pady=10)
-    root.geometry("900x600")
+    root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
     canvas = tk.Canvas(root)
     canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -24,8 +60,8 @@ def displayAlternativesInterface(deviations, len_alternatives):
     canvas.configure(yscrollcommand=scrollbar.set)
 
     main_frame = tk.Frame(canvas)
-    main_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
+    main_frame.pack( fill=tk.BOTH, expand=True)
+    
     original_tasks_label = tk.Label(main_frame, text="Original Tasks:")
     original_tasks_label.grid(row=0, sticky='w')
     original_tasks_label.config(pady=10)
@@ -43,7 +79,10 @@ def displayAlternativesInterface(deviations, len_alternatives):
             task_label = tk.Label(task_frame, text=task_title, fg= 'red' if task_title in deviations else 'black')
             task_label.grid(column=0, row=index)
             task_label.config(pady=10)
-    
+            
+            task_label.bind("<Enter>", show_info_wrapper(task_title, task_label))
+            task_label.bind("<Leave>", hide_info)
+
     if len(deviations.items()) != 0:
         for dev_index, deviation in enumerate(deviations):
             deviation_frame = tk.Frame(main_frame)
@@ -101,9 +140,13 @@ def displayAlternativesInterface(deviations, len_alternatives):
                             task_label = tk.Label(task_frame, text=task_title)
                             task_label.grid(column=0, row=task_index)
                             task_label.config(pady=10)
-                            
+    
     canvas.create_window((0, 0), window=main_frame, anchor="nw")
     main_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    
+    info_frame = tk.Frame(root, bg="white", relief="solid", borderwidth=1)
+    info_frame.config(padx=20, pady=10)
+    
     root.mainloop()
     
 if __name__ == '__main__':
