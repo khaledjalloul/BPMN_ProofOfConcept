@@ -3,6 +3,7 @@ from pybpmn.bpmn_process import BpmnProcess
 from copy import copy
 from interface import displayInterface
 import time
+from pprint import pprint
 
 with open('data/constraints.json') as f:
     constraints = json.load(f)
@@ -30,37 +31,47 @@ def searchForAlternatives(name, kargs, index, constraint_name):
     filteredProcesses1 = []
     for alternative in alternatives:
         enter_constraints = alternatives[alternative]["enter"]
-        isValidEnter = True
+        totalEnterConstraints = len(enter_constraints)
+        numInvalidEnterConstraints = 0
         for constraint in enter_constraints:
             if constraint not in token_state or token_state[constraint] > enter_constraints[constraint][1] or token_state[constraint] < enter_constraints[constraint][0]:
-                isValidEnter = False
-                break
-        if isValidEnter:
-            filteredProcesses1.append(alternative)
+                numInvalidEnterConstraints += 1
+        filteredProcesses1.append({
+            "name": alternative,
+            "numInvalidEnterConstraints": numInvalidEnterConstraints,
+            "totalEnterConstraints": totalEnterConstraints
+        })
     filter1_end_time = time.time()
     filter1_elapsed_time = filter1_end_time - start_time
     
     filteredProcesses2 = []
     for alternative in filteredProcesses1:
-        exit_values = alternatives[alternative]["exit"]
+        exit_values = alternatives[alternative["name"]]["exit"]
         remaining_processes = dict(filter(lambda x: x[1]["index"] > index, constraints.items()))
         remaining_processes = dict(filter(lambda x: "enter" in x[1], remaining_processes.items()))
+        totalExitConstraints = len(exit_values)
         for process in remaining_processes:
-            isValidExit = True
             enter_constraints = remaining_processes[process]["enter"]
+            numInvalidExitConstraints = 0
             for value in exit_values:
                 if value not in enter_constraints or exit_values[value][0] < enter_constraints[value][0] or exit_values[value][1] > enter_constraints[value][1]:
-                    isValidExit = False
-                    break         
-            if (isValidExit):
-                filteredProcesses2.append({
-                    "solution": alternative,
-                    "nextProcess": process,
-                    "nextProcessIndex": remaining_processes[process]['index'],
-                    "constraint": constraint_name
-                })
+                    numInvalidExitConstraints += 1      
+            filteredProcesses2.append({
+                "solution": alternative["name"],
+                "nextProcess": process,
+                "nextProcessIndex": remaining_processes[process]['index'],
+                "constraint": constraint_name,
+                "validityPercentage": 100.0 - ((alternative["numInvalidEnterConstraints"] + numInvalidExitConstraints) / (alternative["totalEnterConstraints"] + totalExitConstraints) * 100.0)
+            })
+    
     filter2_end_time = time.time()
     filter2_elapsed_time = filter2_end_time - filter1_end_time
+    
+    classified_alternatives = {}
+    
+    for c in range(0, 101, 10):
+        classified_alternatives.update({c: len(list(filter(lambda x: x['validityPercentage'] <= c and x['validityPercentage'] > c - 10, filteredProcesses2)))})
+    
     kargs['payload']['deviations'].update({name: {
         "stats": {
             "firstSet": {
@@ -73,9 +84,9 @@ def searchForAlternatives(name, kargs, index, constraint_name):
             }
         },
         "alternatives": copy(filteredProcesses2),
+        "classified_alternatives": classified_alternatives,
         "constraint": constraint_name
     }})
-
                     
 class Handler():        
     def on_enter_task(self, **kargs):
@@ -119,5 +130,6 @@ def test_process():
     instance = BpmnProcess()
     instance.start_process(open("models/simple_bee.xml","r").read(),Handler())
     displayInterface(instance.payload)
+    
 if __name__ == '__main__':
     test_process()

@@ -136,37 +136,55 @@ def displayInterface(payload):
             deviation_frame.grid(
                 row=dev_index + 2, columnspan=getMaxIndex(constraints), sticky='w')
             deviation_frame.config(pady=10)
+            
             encounter_label = tk.Label(
                 deviation_frame, text=f"Encountered a deviation at task {deviation}. Searching {len(all_alternatives)} alternatives:")
             encounter_label.grid(
                 row=0, sticky='w', columnspan=getMaxIndex(constraints))
+            
             first_set_stats = deviations[deviation]['stats']['firstSet']
             stats1_label = tk.Label(
-                deviation_frame, text=f"- Discovered {first_set_stats['count']} alternative(s) as a first set of solutions in {first_set_stats['time']} seconds after filtering enter constraints.")
+                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {first_set_stats['time']} seconds after filtering enter constraints.")
             stats1_label.grid(row=1, sticky='w',
                               columnspan=getMaxIndex(constraints))
+            
             second_set_stats = deviations[deviation]['stats']['secondSet']
             stats2_label = tk.Label(
-                deviation_frame, text=f"- Discovered {second_set_stats['count']} alternative(s) as a second set of solutions in {second_set_stats['time']} seconds after filtering exit constraints.")
+                deviation_frame, text=f"- Processed {second_set_stats['count']} alternative(s) as a second set of solutions in {second_set_stats['time']} seconds after evaluating exit constraints.")
             stats2_label.grid(row=2, sticky='w',
                               columnspan=getMaxIndex(constraints))
 
+            classes_label = tk.Label(
+                deviation_frame, text=f"Classified alternatives based on their validity percentage:")
+            classes_label.grid(
+                row=3, sticky='w', columnspan=getMaxIndex(constraints))
+            classes_label.config(pady=10)
+
+            classified_alternatives = deviations[deviation]['classified_alternatives']
+            for class_index, c in enumerate(classified_alternatives):
+                class_label = tk.Label(
+                    deviation_frame, text=f"- {c}%: {classified_alternatives[c]}")
+                class_label.grid(row=4+class_index, sticky='w',
+                                columnspan=getMaxIndex(constraints))
+            
             alternatives_label = tk.Label(
-                deviation_frame, text="Alternatives:")
-            alternatives_label.grid(row=3, sticky='w')
+                deviation_frame, text="Alternatives with Total Validity:")
+            alternatives_label.grid(row=15, sticky='w')
             alternatives_label.config(pady=10)
 
             alternatives = deviations[deviation]['alternatives']
-            for alt_index, alternative in enumerate(alternatives):
+            valid_alternatives = [a for a in alternatives if a['validityPercentage'] == 100.0]
+            
+            for alt_index, alternative in enumerate(valid_alternatives):
 
                 alt_task_title = tk.Label(
                     deviation_frame, text=f"- {alternative['solution']}:")
-                alt_task_title.grid(row=4 + (alt_index * 2), sticky='w')
+                alt_task_title.grid(row=16 + (alt_index * 2), sticky='w')
                 alt_task_title.config(pady=10)
 
                 alternative_frame = tk.Frame(deviation_frame)
                 alternative_frame.grid(
-                    row=5 + (alt_index * 2), columnspan=getMaxIndex(constraints))
+                    row=17 + (alt_index * 2), columnspan=getMaxIndex(constraints))
                 alternative_frame.config(pady=10)
 
                 dev_task_index = constraints[deviation]['index']
