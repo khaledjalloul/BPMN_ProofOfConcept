@@ -8,7 +8,7 @@ with open('data/generated_alternatives.json') as f:
     all_alternatives = json.load(f)
 
 WINDOW_HEIGHT = 600
-WINDOW_WIDTH = 900
+WINDOW_WIDTH = 1100
 
 
 def getMaxIndex(constraints):
@@ -120,15 +120,26 @@ def displayInterface(payload):
         task_frame = tk.Frame(original_tasks_frame)
         task_frame.grid(column=index * 2, row=0)
         task_frame.config(padx=20, pady=10)
-        for index, task_title in enumerate(task_titles):
+        for task_index, task_title in enumerate(task_titles):
             task_label = tk.Label(
-                task_frame, text=task_title, fg='red' if task_title in deviations else 'black')
-            task_label.grid(column=0, row=index)
-            task_label.config(pady=10)
+                task_frame, text=task_title, fg='red' if task_title in deviations else 'black', bd=1, relief="solid")
+            task_label.grid(column=0, row=task_index * 2)
+            task_label.config(pady=10, padx=3)
+            
+            spacer = tk.Label(task_frame, text="")
+            spacer.grid(column=0, row=task_index * 2 + 1)
+            spacer.config(pady=5)
 
             task_label.bind("<Enter>", show_info_wrapper(
                 task_title, task_label, 'task'))
             task_label.bind("<Leave>", hide_info)
+        
+        if index < getMaxIndex(constraints) - 1:
+            arrow_canvas = tk.Canvas(original_tasks_frame, width=25, height=50)
+            arrow_canvas.grid(column=index * 2 + 1, row=0)
+            arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
+            arrow_canvas.create_polygon(
+                140, 45, 150, 50, 140, 55, fill="black")
 
     if len(deviations.items()) != 0:
         for dev_index, deviation in enumerate(deviations):
@@ -193,41 +204,76 @@ def displayInterface(payload):
                         task_titles = [k for k, v in constraints.items(
                         ) if v["index"] == task_index + 1]
                         task_frame = tk.Frame(alternative_frame)
-                        task_frame.grid(column=task_index * 2, row=0)
-                        task_frame.config(padx=20, pady=10)
-                        for task_index, task_title in enumerate(task_titles):
-                            task_label = tk.Label(task_frame, text=task_title)
-                            task_label.grid(column=0, row=task_index)
-                            task_label.config(pady=10)
-
+                        task_frame.grid(column=task_index * 4, row=0)
+                        task_frame.config(padx=20)
+                        for xor_task_index, task_title in enumerate(task_titles):
+                            task_label = tk.Label(task_frame, text=task_title, bd=1, relief="solid")
+                            task_label.grid(column=0, row=xor_task_index * 2)
+                            task_label.config(pady=10, padx=3)
+                            
+                            spacer = tk.Label(task_frame, text="")
+                            spacer.grid(column=0, row=xor_task_index * 2 + 1)
+                            spacer.config(pady=5)
+                            
                             task_label.bind("<Enter>", show_info_wrapper(
                                 task_title, task_label, 'task_constraints'))
                             task_label.bind("<Leave>", hide_info)
 
+                        arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+                        arrow_canvas.grid(column=task_index * 4 + 1, row=0)
+                        arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
+                        arrow_canvas.create_polygon(
+                            140, 45, 150, 50, 140, 55, fill="black")
+                    
+                alt_task_frame = tk.Frame(alternative_frame)
+                alt_task_frame.grid(column=(dev_task_index - 1) * 4 + 2, row=0)
+                alt_task_frame.config(padx=20)
+                
                 alt_task_label = tk.Label(
-                    alternative_frame, text=alternative['solution'], fg='green')
-                alt_task_label.grid(column=(dev_task_index - 1) * 2 + 1, row=0)
-                alt_task_label.config(pady=10)
+                    alt_task_frame, text=alternative['solution'], fg='green', bd=1, relief="solid")
+                alt_task_label.grid(column=0, row=0)
+                alt_task_label.config(pady=10, padx=3)
 
+                spacer = tk.Label(alt_task_frame, text="")
+                spacer.grid(column=0, row=1)
+                spacer.config(pady=5)
+                
                 alt_task_label.bind("<Enter>", show_info_wrapper(
                     alternative['solution'], alt_task_label, 'alt_task_constraints'))
                 alt_task_label.bind("<Leave>", hide_info)
-
+                
+                arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+                arrow_canvas.grid(column=(dev_task_index - 1) * 4 + 3, row=0)
+                arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
+                arrow_canvas.create_polygon(
+                    140, 45, 150, 50, 140, 55, fill="black")
+                    
                 for task_index in range(getMaxIndex(constraints)):
                     if task_index + 1 >= alternative['nextProcessIndex']:
                         task_titles = [k for k, v in constraints.items(
                         ) if v["index"] == task_index + 1]
                         task_frame = tk.Frame(alternative_frame)
-                        task_frame.grid(column=task_index * 2, row=0)
-                        task_frame.config(padx=20, pady=10)
-                        for task_index, task_title in enumerate(task_titles):
-                            task_label = tk.Label(task_frame, text=task_title)
-                            task_label.grid(column=0, row=task_index)
-                            task_label.config(pady=10)
-
+                        task_frame.grid(column=task_index * 4, row=0)
+                        task_frame.config(padx=20)
+                        for xor_task_index, task_title in enumerate(task_titles):
+                            task_label = tk.Label(task_frame, text=task_title, bd=1, relief="solid")
+                            task_label.grid(column=0, row=xor_task_index * 2)
+                            task_label.config(pady=10, padx=3)
+                            
+                            spacer = tk.Label(task_frame, text="")
+                            spacer.grid(column=0, row=xor_task_index * 2 + 1)
+                            spacer.config(pady=5)
+                            
                             task_label.bind("<Enter>", show_info_wrapper(
                                 task_title, task_label, 'task_constraints'))
                             task_label.bind("<Leave>", hide_info)
+                        
+                        if task_index < getMaxIndex(constraints) - 1:
+                            arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+                            arrow_canvas.grid(column=task_index * 4 + 1, row=0)
+                            arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
+                            arrow_canvas.create_polygon(
+                                140, 45, 150, 50, 140, 55, fill="black")
 
     empty_frame = tk.Frame(main_frame, height=100)
     empty_frame.grid(row=len(deviations.items()) + 2,
