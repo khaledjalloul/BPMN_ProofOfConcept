@@ -155,7 +155,7 @@ def displayInterface(payload):
             
             first_set_stats = deviations[deviation]['stats']['firstSet']
             stats1_label = tk.Label(
-                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {first_set_stats['time']} seconds after filtering enter constraints.")
+                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {first_set_stats['time']} seconds after evaluating enter constraints.")
             stats1_label.grid(row=1, sticky='w',
                               columnspan=getMaxIndex(constraints))
             
@@ -174,7 +174,7 @@ def displayInterface(payload):
             classified_alternatives = deviations[deviation]['classified_alternatives']
             for class_index, c in enumerate(classified_alternatives):
                 class_label = tk.Label(
-                    deviation_frame, text=f"- {c}%: {classified_alternatives[c]}")
+                    deviation_frame, text=f"- {c}%: {classified_alternatives[c]} alternatives.")
                 class_label.grid(row=4+class_index, sticky='w',
                                 columnspan=getMaxIndex(constraints))
             
@@ -184,7 +184,7 @@ def displayInterface(payload):
             alternatives_label.config(pady=10)
 
             alternatives = deviations[deviation]['alternatives']
-            valid_alternatives = [a for a in alternatives if a['validityPercentage'] == 100.0]
+            valid_alternatives = [a for a in alternatives if a['validity_percentage'] == 100.0]
             
             for alt_index, alternative in enumerate(valid_alternatives):
 
@@ -249,7 +249,7 @@ def displayInterface(payload):
                     140, 45, 150, 50, 140, 55, fill="black")
                     
                 for task_index in range(getMaxIndex(constraints)):
-                    if task_index + 1 >= alternative['nextProcessIndex']:
+                    if task_index + 1 >= alternative['next_process_index']:
                         task_titles = [k for k, v in constraints.items(
                         ) if v["index"] == task_index + 1]
                         task_frame = tk.Frame(alternative_frame)

@@ -10,11 +10,7 @@ with open('data/constraints.json') as f:
     
 with open('data/generated_alternatives.json') as f:
     alternatives = json.load(f)
-    
-def handleDeviation(kargs, variable, value, expected_range, correct_value, stage):
-    kargs['payload']['token_state'][variable] = correct_value
-    kargs['task'].update({f'{stage}_state': copy(kargs['payload']['token_state'])}) # Save correct value in payload
-    
+
 def checkConstraints(name, position, kargs):
     token_state = kargs['payload']['token_state']
     if position in constraints[name]:
@@ -31,15 +27,15 @@ def searchForAlternatives(name, kargs, index, constraint_name):
     filteredProcesses1 = []
     for alternative in alternatives:
         enter_constraints = alternatives[alternative]["enter"]
-        totalEnterConstraints = len(enter_constraints)
-        numInvalidEnterConstraints = 0
+        total_enter_constraints = len(enter_constraints)
+        num_invalid_enter_constraints = 0
         for constraint in enter_constraints:
             if constraint not in token_state or token_state[constraint] > enter_constraints[constraint][1] or token_state[constraint] < enter_constraints[constraint][0]:
-                numInvalidEnterConstraints += 1
+                num_invalid_enter_constraints += 1
         filteredProcesses1.append({
             "name": alternative,
-            "numInvalidEnterConstraints": numInvalidEnterConstraints,
-            "totalEnterConstraints": totalEnterConstraints
+            "num_invalid_enter_constraints": num_invalid_enter_constraints,
+            "total_enter_constraints": total_enter_constraints
         })
     filter1_end_time = time.time()
     filter1_elapsed_time = filter1_end_time - start_time
@@ -49,19 +45,19 @@ def searchForAlternatives(name, kargs, index, constraint_name):
         exit_values = alternatives[alternative["name"]]["exit"]
         remaining_processes = dict(filter(lambda x: x[1]["index"] > index, constraints.items()))
         remaining_processes = dict(filter(lambda x: "enter" in x[1], remaining_processes.items()))
-        totalExitConstraints = len(exit_values)
+        total_exit_constraints = len(exit_values)
         for process in remaining_processes:
             enter_constraints = remaining_processes[process]["enter"]
-            numInvalidExitConstraints = 0
+            num_invalid_exit_constraints = 0
             for value in exit_values:
                 if value not in enter_constraints or exit_values[value][0] < enter_constraints[value][0] or exit_values[value][1] > enter_constraints[value][1]:
-                    numInvalidExitConstraints += 1      
+                    num_invalid_exit_constraints += 1      
             filteredProcesses2.append({
                 "solution": alternative["name"],
-                "nextProcess": process,
-                "nextProcessIndex": remaining_processes[process]['index'],
+                "next_process": process,
+                "next_process_index": remaining_processes[process]['index'],
                 "constraint": constraint_name,
-                "validityPercentage": 100.0 - ((alternative["numInvalidEnterConstraints"] + numInvalidExitConstraints) / (alternative["totalEnterConstraints"] + totalExitConstraints) * 100.0)
+                "validity_percentage": 100.0 - ((alternative["num_invalid_enter_constraints"] + num_invalid_exit_constraints) / (alternative["total_enter_constraints"] + total_exit_constraints) * 100.0)
             })
     
     filter2_end_time = time.time()
@@ -70,7 +66,7 @@ def searchForAlternatives(name, kargs, index, constraint_name):
     classified_alternatives = {}
     
     for c in range(0, 101, 10):
-        classified_alternatives.update({c: len(list(filter(lambda x: x['validityPercentage'] <= c and x['validityPercentage'] > c - 10, filteredProcesses2)))})
+        classified_alternatives.update({c: len(list(filter(lambda x: x['validity_percentage'] <= c and x['validity_percentage'] > c - 10, filteredProcesses2)))})
     
     kargs['payload']['deviations'].update({name: {
         "stats": {
