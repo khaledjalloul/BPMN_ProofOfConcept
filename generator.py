@@ -1,5 +1,4 @@
 from random import randint, choice
-from pprint import pprint
 import json
 
 constraints = {
@@ -9,7 +8,15 @@ constraints = {
     "quality": [60, 80],
     "temperature": [20, 30],
     "humidity": [0, 10],
-    "strength": [20, 30]
+    "strength": [20, 30],
+    "pest_control": [0, 5],
+    "pollination_intensity": [1, 10],
+    "labour_intensity": [1, 5],
+    "product_yield": [100, 500],
+    "hive_population": [1000, 5000],
+    "bee_health": [1, 5],
+    "honey_production": [10, 100],
+    "wax_production": [5, 50]
 }
 
 constraint_names = []
@@ -18,7 +25,7 @@ for constraint in constraints:
     
 alternatives = {}
 
-for i in range(1000):
+for i in range(10000):
     name = f"Process{i+1}"
     
     num_inputs = randint(1, len(constraint_names))
@@ -50,7 +57,6 @@ for i in range(1000):
         alternatives[name] = result
 
 print(f"Generated {len(alternatives)} alternatives.")
-# pprint(alternatives)
 
 with open("data/generated_alternatives.json", "w") as file:
     json.dump(alternatives, file)        

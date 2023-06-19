@@ -1,11 +1,4 @@
 import tkinter as tk
-import json
-
-with open('data/constraints.json') as f:
-    constraints = json.load(f)
-
-with open('data/generated_alternatives.json') as f:
-    all_alternatives = json.load(f)
 
 WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 1100
@@ -19,7 +12,7 @@ def getMaxIndex(constraints):
     return max
 
 
-def displayInterface(payload):
+def displayInterface(payload, constraints, all_alternatives, elapsed_time):
     deviations = payload['deviations']
 
     def show_info_wrapper(task, passed_widget, type):
@@ -106,12 +99,16 @@ def displayInterface(payload):
     main_frame = tk.Frame(canvas)
     main_frame.pack(fill=tk.BOTH, expand=True)
 
+    loading_time_label = tk.Label(main_frame, text=f"Alternatives Loading Time: {round(elapsed_time, 5)} seconds.")
+    loading_time_label.grid(row=0, sticky='w')
+    loading_time_label.config(pady=10)
+    
     original_tasks_label = tk.Label(main_frame, text="Original Tasks:")
-    original_tasks_label.grid(row=0, sticky='w')
+    original_tasks_label.grid(row=1, sticky='w')
     original_tasks_label.config(pady=10)
 
     original_tasks_frame = tk.Frame(main_frame)
-    original_tasks_frame.grid(row=1, columnspan=getMaxIndex(constraints))
+    original_tasks_frame.grid(row=2, columnspan=getMaxIndex(constraints))
     original_tasks_frame.config(pady=10)
 
     for index in range(getMaxIndex(constraints)):
@@ -125,7 +122,7 @@ def displayInterface(payload):
                 task_frame, text=task_title, fg='red' if task_title in deviations else 'black', bd=1, relief="solid")
             task_label.grid(column=0, row=task_index * 2)
             task_label.config(pady=10, padx=3)
-            
+
             spacer = tk.Label(task_frame, text="")
             spacer.grid(column=0, row=task_index * 2 + 1)
             spacer.config(pady=5)
@@ -133,7 +130,7 @@ def displayInterface(payload):
             task_label.bind("<Enter>", show_info_wrapper(
                 task_title, task_label, 'task'))
             task_label.bind("<Leave>", hide_info)
-        
+
         if index < getMaxIndex(constraints) - 1:
             arrow_canvas = tk.Canvas(original_tasks_frame, width=25, height=50)
             arrow_canvas.grid(column=index * 2 + 1, row=0)
@@ -145,23 +142,23 @@ def displayInterface(payload):
         for dev_index, deviation in enumerate(deviations):
             deviation_frame = tk.Frame(main_frame)
             deviation_frame.grid(
-                row=dev_index + 2, columnspan=getMaxIndex(constraints), sticky='w')
+                row=dev_index + 3, columnspan=getMaxIndex(constraints), sticky='w')
             deviation_frame.config(pady=10)
-            
+
             encounter_label = tk.Label(
                 deviation_frame, text=f"Encountered a deviation at task {deviation}. Searching {len(all_alternatives)} alternatives:")
             encounter_label.grid(
                 row=0, sticky='w', columnspan=getMaxIndex(constraints))
-            
+
             first_set_stats = deviations[deviation]['stats']['firstSet']
             stats1_label = tk.Label(
-                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {first_set_stats['time']} seconds after evaluating enter constraints.")
+                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {round(first_set_stats['time'], 5)} seconds after evaluating enter constraints.")
             stats1_label.grid(row=1, sticky='w',
                               columnspan=getMaxIndex(constraints))
-            
+
             second_set_stats = deviations[deviation]['stats']['secondSet']
             stats2_label = tk.Label(
-                deviation_frame, text=f"- Processed {second_set_stats['count']} alternative(s) as a second set of solutions in {second_set_stats['time']} seconds after evaluating exit constraints.")
+                deviation_frame, text=f"- Processed {second_set_stats['count']} alternative(s) as a second set of solutions in {round(second_set_stats['time'], 5)} seconds after evaluating exit constraints.")
             stats2_label.grid(row=2, sticky='w',
                               columnspan=getMaxIndex(constraints))
 
@@ -176,16 +173,17 @@ def displayInterface(payload):
                 class_label = tk.Label(
                     deviation_frame, text=f"- {c}%: {classified_alternatives[c]} alternatives.")
                 class_label.grid(row=4+class_index, sticky='w',
-                                columnspan=getMaxIndex(constraints))
-            
+                                 columnspan=getMaxIndex(constraints))
+
             alternatives_label = tk.Label(
                 deviation_frame, text="Alternatives with Total Validity:")
             alternatives_label.grid(row=15, sticky='w')
             alternatives_label.config(pady=10)
 
             alternatives = deviations[deviation]['alternatives']
-            valid_alternatives = [a for a in alternatives if a['validity_percentage'] == 100.0]
-            
+            valid_alternatives = [
+                a for a in alternatives if a['validity_percentage'] == 100.0]
+
             for alt_index, alternative in enumerate(valid_alternatives):
 
                 alt_task_title = tk.Label(
@@ -207,28 +205,30 @@ def displayInterface(payload):
                         task_frame.grid(column=task_index * 4, row=0)
                         task_frame.config(padx=20)
                         for xor_task_index, task_title in enumerate(task_titles):
-                            task_label = tk.Label(task_frame, text=task_title, bd=1, relief="solid")
+                            task_label = tk.Label(
+                                task_frame, text=task_title, bd=1, relief="solid")
                             task_label.grid(column=0, row=xor_task_index * 2)
                             task_label.config(pady=10, padx=3)
-                            
+
                             spacer = tk.Label(task_frame, text="")
                             spacer.grid(column=0, row=xor_task_index * 2 + 1)
                             spacer.config(pady=5)
-                            
+
                             task_label.bind("<Enter>", show_info_wrapper(
                                 task_title, task_label, 'task_constraints'))
                             task_label.bind("<Leave>", hide_info)
 
-                        arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+                        arrow_canvas = tk.Canvas(
+                            alternative_frame, width=25, height=50)
                         arrow_canvas.grid(column=task_index * 4 + 1, row=0)
                         arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
                         arrow_canvas.create_polygon(
                             140, 45, 150, 50, 140, 55, fill="black")
-                    
+
                 alt_task_frame = tk.Frame(alternative_frame)
                 alt_task_frame.grid(column=(dev_task_index - 1) * 4 + 2, row=0)
                 alt_task_frame.config(padx=20)
-                
+
                 alt_task_label = tk.Label(
                     alt_task_frame, text=alternative['solution'], fg='green', bd=1, relief="solid")
                 alt_task_label.grid(column=0, row=0)
@@ -237,17 +237,18 @@ def displayInterface(payload):
                 spacer = tk.Label(alt_task_frame, text="")
                 spacer.grid(column=0, row=1)
                 spacer.config(pady=5)
-                
+
                 alt_task_label.bind("<Enter>", show_info_wrapper(
                     alternative['solution'], alt_task_label, 'alt_task_constraints'))
                 alt_task_label.bind("<Leave>", hide_info)
-                
-                arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+
+                arrow_canvas = tk.Canvas(
+                    alternative_frame, width=25, height=50)
                 arrow_canvas.grid(column=(dev_task_index - 1) * 4 + 3, row=0)
                 arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
                 arrow_canvas.create_polygon(
                     140, 45, 150, 50, 140, 55, fill="black")
-                    
+
                 for task_index in range(getMaxIndex(constraints)):
                     if task_index + 1 >= alternative['next_process_index']:
                         task_titles = [k for k, v in constraints.items(
@@ -256,27 +257,30 @@ def displayInterface(payload):
                         task_frame.grid(column=task_index * 4, row=0)
                         task_frame.config(padx=20)
                         for xor_task_index, task_title in enumerate(task_titles):
-                            task_label = tk.Label(task_frame, text=task_title, bd=1, relief="solid")
+                            task_label = tk.Label(
+                                task_frame, text=task_title, bd=1, relief="solid")
                             task_label.grid(column=0, row=xor_task_index * 2)
                             task_label.config(pady=10, padx=3)
-                            
+
                             spacer = tk.Label(task_frame, text="")
                             spacer.grid(column=0, row=xor_task_index * 2 + 1)
                             spacer.config(pady=5)
-                            
+
                             task_label.bind("<Enter>", show_info_wrapper(
                                 task_title, task_label, 'task_constraints'))
                             task_label.bind("<Leave>", hide_info)
-                        
+
                         if task_index < getMaxIndex(constraints) - 1:
-                            arrow_canvas = tk.Canvas(alternative_frame, width=25, height=50)
+                            arrow_canvas = tk.Canvas(
+                                alternative_frame, width=25, height=50)
                             arrow_canvas.grid(column=task_index * 4 + 1, row=0)
-                            arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
+                            arrow_canvas.create_line(
+                                0, 15, 25, 15, arrow=tk.LAST)
                             arrow_canvas.create_polygon(
                                 140, 45, 150, 50, 140, 55, fill="black")
 
     empty_frame = tk.Frame(main_frame, height=100)
-    empty_frame.grid(row=len(deviations.items()) + 2,
+    empty_frame.grid(row=len(deviations.items()) + 3,
                      columnspan=getMaxIndex(constraints))
     empty_frame.config(pady=10)
 

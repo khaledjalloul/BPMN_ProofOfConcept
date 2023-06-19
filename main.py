@@ -3,13 +3,15 @@ from pybpmn.bpmn_process import BpmnProcess
 from copy import copy
 from interface import displayInterface
 import time
-from pprint import pprint
 
+ALTERNATIVES_IN_BATCHES = True
+
+loading_start_time = time.time()
+loading_end_time = loading_start_time
+alternatives = None
+    
 with open('data/constraints.json') as f:
     constraints = json.load(f)
-    
-with open('data/generated_alternatives.json') as f:
-    alternatives = json.load(f)
 
 def checkConstraints(name, position, kargs):
     token_state = kargs['payload']['token_state']
@@ -21,6 +23,19 @@ def checkConstraints(name, position, kargs):
                     searchForAlternatives(name, kargs, constraints[name]["index"], constraint)
     
 def searchForAlternatives(name, kargs, index, constraint_name):
+    global alternatives, loading_end_time
+    if alternatives is None:
+        if ALTERNATIVES_IN_BATCHES:
+            with open('data/generated_alternatives.json') as f:
+                alternatives_arr = json.load(f)
+            alternatives = {}
+            for alternatives_batch in alternatives_arr:
+                alternatives.update(alternatives_batch)
+        else:
+            with open('data/generated_alternatives.json') as f:
+                alternatives = json.load(f)
+        loading_end_time = time.time()
+
     token_state = kargs['payload']['token_state']
 
     start_time = time.time()
@@ -125,7 +140,7 @@ class Handler():
 def test_process():
     instance = BpmnProcess()
     instance.start_process(open("models/simple_bee.xml","r").read(),Handler())
-    displayInterface(instance.payload)
+    displayInterface(instance.payload, constraints, alternatives, loading_end_time - loading_start_time)
     
 if __name__ == '__main__':
     test_process()

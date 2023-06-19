@@ -1,3 +1,6 @@
 __pycache__
 env
 .vscode
+data/*
+!data/constraints.json
+!data/generated_alternatives.json
