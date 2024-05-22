@@ -4,6 +4,7 @@ import signal
 
 FILE_NAME = "data/generated_alternatives.json"
 
+# All possible constraints, a combination of which will be generated
 constraints = {
     "weight": [0, 40],
     "cost": [131, 149],
@@ -45,6 +46,7 @@ for j in range(10):
     for i in range(1000):
         name = f"Process{j}{i+1}"
         
+        # Choose a random number N then select N random input constraints
         num_inputs = randint(1, len(constraint_names))
         input_constraints = {}
         for input_index in range(num_inputs):
@@ -52,7 +54,8 @@ for j in range(10):
             while selected_constraint in input_constraints:
                 selected_constraint = choice(constraint_names)
             input_constraints[selected_constraint] = constraints[selected_constraint]
-            
+          
+        # Choose a random number N then select N random exit constraints    
         num_outputs = randint(1, len(constraint_names))
         output_constraints = {}
         for output_index in range(num_outputs):
@@ -65,6 +68,7 @@ for j in range(10):
         result["enter"] = input_constraints
         result["exit"] = output_constraints
         
+        # Remove if duplicate exists
         alreadyExists = False
         for existing_alternative in alternatives:
             if result == alternatives[existing_alternative]:

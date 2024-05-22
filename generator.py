@@ -1,6 +1,7 @@
 from random import randint, choice
 import json
 
+# All possible constraints, a combination of which will be generated
 constraints = {
     "weight": [0, 40],
     "cost": [131, 149],
@@ -28,6 +29,7 @@ alternatives = {}
 for i in range(10000):
     name = f"Process{i+1}"
     
+    # Choose a random number N then select N random input constraints
     num_inputs = randint(1, len(constraint_names))
     input_constraints = {}
     for input_index in range(num_inputs):
@@ -36,6 +38,7 @@ for i in range(10000):
             selected_constraint = choice(constraint_names)
         input_constraints[selected_constraint] = constraints[selected_constraint]
         
+    # Choose a random number N then select N random exit constraints    
     num_outputs = randint(1, len(constraint_names))
     output_constraints = {}
     for output_index in range(num_outputs):
@@ -48,6 +51,7 @@ for i in range(10000):
     result["enter"] = input_constraints
     result["exit"] = output_constraints
     
+    # Remove if duplicate exists
     alreadyExists = False
     for existing_alternative in alternatives:
         if result == alternatives[existing_alternative]:
