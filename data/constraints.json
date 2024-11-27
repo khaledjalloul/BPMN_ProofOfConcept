@@ -40,7 +40,7 @@
         "index": 3,
         "input": {
             "cost": [50, 100],
-            "num_provisions": [30, 999]
+            "num_provisions": [51, 999]
         },
         "output": {
             "cost": [100, 150],

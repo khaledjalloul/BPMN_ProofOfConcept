@@ -11,13 +11,13 @@ def load_constraints() -> dict:
 
 def load_alternatives(in_batches: bool) -> Tuple[list, float]:
     if in_batches:
-        with open('data/generated_alternatives.json') as f:
+        with open('data/100000_generated_alternatives.json') as f:
             alternatives_arr = json.load(f)
         alternatives = {}
         for alternatives_batch in alternatives_arr:
             alternatives.update(alternatives_batch)
     else:
-        with open('data/generated_alternatives.json') as f:
+        with open('data/100000_generated_alternatives.json') as f:
             alternatives = json.load(f)
 
     return alternatives, time.time()

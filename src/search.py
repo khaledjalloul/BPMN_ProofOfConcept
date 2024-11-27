@@ -1,6 +1,7 @@
 
 import time
 from copy import copy
+import random
 
 
 def check_constraints(name: str, position: str, kargs: dict, deviation_found: bool,
@@ -143,6 +144,11 @@ def search_for_alternatives(name: str, kargs: dict, index: int, constraint_name:
         classified_alternatives.update({c: len(list(filter(
             lambda x: x['validity_percentage'] <= c and x['validity_percentage'] > c - 10, output_alternatives)))})
 
+    alts_with_total_validity = list(
+        filter(lambda x: x['validity_percentage'] == 100, output_alternatives))
+    final_sorted_alternatives = sort_alternatives(
+        index, alts_with_total_validity, constraints)
+
     kargs['payload']['deviations'].update({name: {
         "stats": {
             "firstSet": {
@@ -156,5 +162,26 @@ def search_for_alternatives(name: str, kargs: dict, index: int, constraint_name:
         },
         "alternatives": copy(output_alternatives),
         "classified_alternatives": classified_alternatives,
+        "final_sorted_alternatives": final_sorted_alternatives,
         "constraint": constraint_name
     }})
+
+
+def sort_alternatives(task_index: list, alternatives: list, constraints: dict) -> list:
+    alternatives = copy(alternatives)
+    for alt in alternatives:
+        num_blocks_passed = alt["next_process_index"] - task_index
+        granularity = (num_blocks_passed / len(constraints)) * 100
+        alt["granularity"] = granularity
+
+        cost = (random.randint(20, 50) / 260) * 100
+        alt["cost"] = cost
+
+        overquality = random.random() * 100
+        alt["overquality"] = overquality
+
+        objective_function = (0.2 * cost + 0.6 * granularity + 0.2 * overquality) / 100.0
+        alt["objective_function"] = objective_function
+
+    alternatives.sort(key=lambda x: x["objective_function"], reverse=True)
+    return alternatives
