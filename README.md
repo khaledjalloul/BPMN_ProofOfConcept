@@ -21,13 +21,13 @@ pip install -r requirements.txt
 Generate new alternative tasks for the search algorithm, or skip this step and use the existing generated alternatives:
 
 ```
-python3 generator.py
+python3 src/generator.py
 ```
 
 Run the main script:
 
 ```
-python3 main.py
+python3 src/main.py
 ```
 
 ---

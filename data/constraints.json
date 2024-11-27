@@ -1,39 +1,77 @@
 {
     "CheckDate": {
-        "index": 1  
+        "index": 1,
+        "output": {
+            "date": [20240715, 20241231]
+        }
     },
     "CheckProvisions": {
         "index": 2,
-        "enter": {
-            "date": [20230715, 20230730]
+        "input": {
+            "date": [20240715, 20241231],
+            "num_provisions": [30, 999],
+            "weight": [30, 999],
+            "cost": [50, 999]
         },
-        "exit": {
-            "num_provisions": [30, 50]
+        "output": {
+            "num_provisions": [30, 999],
+            "weight": [30, 999],
+            "cost": [50, 100]
+        },
+        "constraints": {
+            "weather": "sunny"
         }
     },
     "LiquidProteinsFeeding": {
         "index": 3,
-        "enter": {
-            "num_provisions": [30, 50]
+        "input": {
+            "cost": [50, 100],
+            "num_provisions": [30, 999]
         },
-        "exit": {
-            "weight": [35, 50]
+        "output": {
+            "cost": [100, 200],
+            "weight": [35, 999]
+        },
+        "constraints": {
+            "date": [20240101, 20240825]
         }
     },
     "CandyboardFeeding": {
-        "index": 3
+        "index": 3,
+        "input": {
+            "cost": [50, 100],
+            "num_provisions": [30, 999]
+        },
+        "output": {
+            "cost": [100, 150],
+            "weight": [35, 999]
+        },
+        "date": [20240826, 20241231]
     },
     "VarioseVaccineNovember": {
         "index": 4,
-        "enter": {
-            "cost": [130, 150]
+        "input": {
+            "date": [20241101, 20241130],
+            "cost": [100, 999]
+        },
+        "output": {
+            "cost": [150, 999]
+        },
+        "constraints": {
+            "weather": "sunny"
         }
     },
     "RoutineCheck": {
         "index": 5,
-        "enter": {
-            "cost": [130, 150],
-            "quality": [60, 80]
+        "input": {
+            "cost": [150, 999],
+            "weight": [35, 999]
+        },
+        "output": {
+            "weight": [35, 999]
+        },
+        "constraints": {
+            "weather": "sunny"
         }
     }
 }

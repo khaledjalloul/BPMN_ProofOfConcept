@@ -48,8 +48,8 @@ for i in range(10000):
         output_constraints[selected_constraint] = constraints[selected_constraint]
         
     result = {}
-    result["enter"] = input_constraints
-    result["exit"] = output_constraints
+    result["input"] = input_constraints
+    result["output"] = output_constraints
     
     # Remove if duplicate exists
     alreadyExists = False

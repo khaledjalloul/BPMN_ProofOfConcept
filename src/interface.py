@@ -4,7 +4,7 @@ WINDOW_HEIGHT = 600
 WINDOW_WIDTH = 1100
 
 
-def getMaxIndex(constraints):
+def get_max_index(constraints):
     max = 0
     for task in constraints:
         if constraints[task]["index"] > max:
@@ -12,7 +12,7 @@ def getMaxIndex(constraints):
     return max
 
 
-def displayInterface(payload, constraints, all_alternatives, elapsed_time):
+def display_interface(payload, constraints, all_alternatives, elapsed_time):
     deviations = payload['deviations']
 
     def show_info_wrapper(task, passed_widget, type):
@@ -35,43 +35,42 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
                 if task in payload:
                     for enter_index, enter_var in enumerate(payload[task]['enter_state']):
                         labelText = f"{enter_var} = {payload[task]['enter_state'][enter_var]}"
-                        label = tk.Label(
-                            info_frame, text=labelText, bg="white")
+                        label = tk.Label(info_frame, text=labelText, bg="white",
+                                         fg='red' if task in deviations and enter_var == deviations[task]['constraint'] else 'black')
                         label.grid(row=3+enter_index, column=1, sticky='w')
                         label.config(padx=10)
 
                     for exit_index, exit_var in enumerate(payload[task]['exit_state']):
                         labelText = f"{exit_var} = {payload[task]['exit_state'][exit_var]}"
-                        label = tk.Label(info_frame, text=labelText, bg="white",
-                                         fg='red' if task in deviations and exit_var == deviations[task]['constraint'] else 'black')
+                        label = tk.Label(info_frame, text=labelText, bg="white")
                         label.grid(row=3+exit_index, column=2, sticky='w')
             elif type == 'task_constraints':
-                if 'enter' in constraints[task]:
-                    for enter_index, enter_var in enumerate(constraints[task]['enter']):
-                        labelText = f"{enter_var} = {constraints[task]['enter'][enter_var]}"
+                if 'input' in constraints[task]:
+                    for enter_index, enter_var in enumerate(constraints[task]['input']):
+                        labelText = f"{enter_var} = {constraints[task]['input'][enter_var]}"
                         label = tk.Label(
                             info_frame, text=labelText, bg="white")
                         label.grid(row=3+enter_index, column=1, sticky='w')
                         label.config(padx=10)
 
-                if 'exit' in constraints[task]:
-                    for exit_index, exit_var in enumerate(constraints[task]['exit']):
-                        labelText = f"{exit_var} = {constraints[task]['exit'][exit_var]}"
+                if 'output' in constraints[task]:
+                    for exit_index, exit_var in enumerate(constraints[task]['output']):
+                        labelText = f"{exit_var} = {constraints[task]['output'][exit_var]}"
                         label = tk.Label(
                             info_frame, text=labelText, bg="white")
                         label.grid(row=3+exit_index, column=2, sticky='w')
             else:
-                if 'enter' in all_alternatives[task]:
-                    for enter_index, enter_var in enumerate(all_alternatives[task]['enter']):
-                        labelText = f"{enter_var} = {all_alternatives[task]['enter'][enter_var]}"
+                if 'input' in all_alternatives[task]:
+                    for enter_index, enter_var in enumerate(all_alternatives[task]['input']):
+                        labelText = f"{enter_var} = {all_alternatives[task]['input'][enter_var]}"
                         label = tk.Label(
                             info_frame, text=labelText, bg="white")
                         label.grid(row=3+enter_index, column=1, sticky='w')
                         label.config(padx=10)
 
-                if 'exit' in all_alternatives[task]:
-                    for exit_index, exit_var in enumerate(all_alternatives[task]['exit']):
-                        labelText = f"{exit_var} = {all_alternatives[task]['exit'][exit_var]}"
+                if 'output' in all_alternatives[task]:
+                    for exit_index, exit_var in enumerate(all_alternatives[task]['output']):
+                        labelText = f"{exit_var} = {all_alternatives[task]['output'][exit_var]}"
                         label = tk.Label(
                             info_frame, text=labelText, bg="white")
                         label.grid(row=3+exit_index, column=2, sticky='w')
@@ -85,6 +84,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
         info_frame.place_forget()
 
     root = tk.Tk()
+    root.title("Results")
     root.config(padx=20, pady=10)
     root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
 
@@ -99,19 +99,20 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
     main_frame = tk.Frame(canvas)
     main_frame.pack(fill=tk.BOTH, expand=True)
 
-    loading_time_label = tk.Label(main_frame, text=f"Alternatives Loading Time: {round(elapsed_time, 5)} seconds.")
+    loading_time_label = tk.Label(
+        main_frame, text=f"Alternatives Loading Time: {round(elapsed_time, 5)} seconds.")
     loading_time_label.grid(row=0, sticky='w')
     loading_time_label.config(pady=10)
-    
+
     original_tasks_label = tk.Label(main_frame, text="Original Tasks:")
     original_tasks_label.grid(row=1, sticky='w')
     original_tasks_label.config(pady=10)
 
     original_tasks_frame = tk.Frame(main_frame)
-    original_tasks_frame.grid(row=2, columnspan=getMaxIndex(constraints))
+    original_tasks_frame.grid(row=2, columnspan=get_max_index(constraints))
     original_tasks_frame.config(pady=10)
 
-    for index in range(getMaxIndex(constraints)):
+    for index in range(get_max_index(constraints)):
         task_titles = [k for k, v in constraints.items()
                        if v["index"] == index + 1]
         task_frame = tk.Frame(original_tasks_frame)
@@ -131,7 +132,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
                 task_title, task_label, 'task'))
             task_label.bind("<Leave>", hide_info)
 
-        if index < getMaxIndex(constraints) - 1:
+        if index < get_max_index(constraints) - 1:
             arrow_canvas = tk.Canvas(original_tasks_frame, width=25, height=50)
             arrow_canvas.grid(column=index * 2 + 1, row=0)
             arrow_canvas.create_line(0, 15, 25, 15, arrow=tk.LAST)
@@ -142,30 +143,30 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
         for dev_index, deviation in enumerate(deviations):
             deviation_frame = tk.Frame(main_frame)
             deviation_frame.grid(
-                row=dev_index + 3, columnspan=getMaxIndex(constraints), sticky='w')
+                row=dev_index + 3, columnspan=get_max_index(constraints), sticky='w')
             deviation_frame.config(pady=10)
 
             encounter_label = tk.Label(
                 deviation_frame, text=f"Encountered a deviation at task {deviation}. Searching {len(all_alternatives)} alternatives:")
             encounter_label.grid(
-                row=0, sticky='w', columnspan=getMaxIndex(constraints))
+                row=0, sticky='w', columnspan=get_max_index(constraints))
 
             first_set_stats = deviations[deviation]['stats']['firstSet']
             stats1_label = tk.Label(
-                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {round(first_set_stats['time'], 5)} seconds after evaluating enter constraints.")
+                deviation_frame, text=f"- Processed {first_set_stats['count']} alternative(s) as a first set of solutions in {round(first_set_stats['time'], 5)} seconds after evaluating inputs.")
             stats1_label.grid(row=1, sticky='w',
-                              columnspan=getMaxIndex(constraints))
-
+                              columnspan=get_max_index(constraints))
+            
             second_set_stats = deviations[deviation]['stats']['secondSet']
             stats2_label = tk.Label(
-                deviation_frame, text=f"- Processed {second_set_stats['count']} alternative(s) as a second set of solutions in {round(second_set_stats['time'], 5)} seconds after evaluating exit constraints.")
+                deviation_frame, text=f"- Processed {second_set_stats['count']} alternative(s) as a second set of solutions in {round(second_set_stats['time'], 5)} seconds after evaluating outputs.")
             stats2_label.grid(row=2, sticky='w',
-                              columnspan=getMaxIndex(constraints))
+                              columnspan=get_max_index(constraints))
 
             classes_label = tk.Label(
                 deviation_frame, text=f"Classified alternatives based on their validity percentage:")
             classes_label.grid(
-                row=3, sticky='w', columnspan=getMaxIndex(constraints))
+                row=3, sticky='w', columnspan=get_max_index(constraints))
             classes_label.config(pady=10)
 
             classified_alternatives = deviations[deviation]['classified_alternatives']
@@ -173,7 +174,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
                 class_label = tk.Label(
                     deviation_frame, text=f"- {c}%: {classified_alternatives[c]} alternatives.")
                 class_label.grid(row=4+class_index, sticky='w',
-                                 columnspan=getMaxIndex(constraints))
+                                 columnspan=get_max_index(constraints))
 
             alternatives_label = tk.Label(
                 deviation_frame, text="Alternatives with Total Validity:")
@@ -193,12 +194,13 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
 
                 alternative_frame = tk.Frame(deviation_frame)
                 alternative_frame.grid(
-                    row=17 + (alt_index * 2), columnspan=getMaxIndex(constraints))
+                    row=17 + (alt_index * 2), columnspan=get_max_index(constraints))
                 alternative_frame.config(pady=10)
 
                 dev_task_index = constraints[deviation]['index']
-                for task_index in range(getMaxIndex(constraints)):
-                    if task_index + 1 <= dev_task_index:
+                
+                for task_index in range(get_max_index(constraints)):
+                    if task_index + 1 < dev_task_index:
                         task_titles = [k for k, v in constraints.items(
                         ) if v["index"] == task_index + 1]
                         task_frame = tk.Frame(alternative_frame)
@@ -249,7 +251,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
                 arrow_canvas.create_polygon(
                     140, 45, 150, 50, 140, 55, fill="black")
 
-                for task_index in range(getMaxIndex(constraints)):
+                for task_index in range(get_max_index(constraints)):
                     if task_index + 1 >= alternative['next_process_index']:
                         task_titles = [k for k, v in constraints.items(
                         ) if v["index"] == task_index + 1]
@@ -270,7 +272,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
                                 task_title, task_label, 'task_constraints'))
                             task_label.bind("<Leave>", hide_info)
 
-                        if task_index < getMaxIndex(constraints) - 1:
+                        if task_index < get_max_index(constraints) - 1:
                             arrow_canvas = tk.Canvas(
                                 alternative_frame, width=25, height=50)
                             arrow_canvas.grid(column=task_index * 4 + 1, row=0)
@@ -281,7 +283,7 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
 
     empty_frame = tk.Frame(main_frame, height=100)
     empty_frame.grid(row=len(deviations.items()) + 3,
-                     columnspan=getMaxIndex(constraints))
+                     columnspan=get_max_index(constraints))
     empty_frame.config(pady=10)
 
     canvas.create_window((0, 0), window=main_frame, anchor="nw")
@@ -292,7 +294,3 @@ def displayInterface(payload, constraints, all_alternatives, elapsed_time):
     info_frame.config(padx=20, pady=10)
 
     root.mainloop()
-
-
-if __name__ == '__main__':
-    displayInterface()
